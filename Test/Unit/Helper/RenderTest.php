@@ -10,7 +10,7 @@ namespace SemExpert\ProductTags\Test\Unit\Helper;
 
 use Magento\Catalog\Api\Data\ProductInterface;
 use SemExpert\ProductTags\Helper\Render;
-use SemExpert\ProductTags\Model\ConfigurationInterface;
+use SemExpert\ProductTags\Model\ConfigInterface;
 
 class RenderTest extends \PHPUnit_Framework_TestCase
 {
@@ -25,13 +25,13 @@ class RenderTest extends \PHPUnit_Framework_TestCase
     public $helper;
 
     /**
-     * @var ConfigurationInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var ConfigInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $config;
 
     public function setUp()
     {
-        $this->config = $this->getMock(ConfigurationInterface::class);
+        $this->config = $this->getMock(ConfigInterface::class);
         $this->helper = new Render($this->config);
         $this->product = $this->getMock(ProductInterface::class);
     }

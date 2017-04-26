@@ -12,8 +12,10 @@ use Magento\Framework\App\DeploymentConfig;
 use Magento\Framework\Component\ComponentRegistrar;
 use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Module\ModuleList;
+use Magento\Framework\ObjectManager\ConfigInterface as DIConfig;
 use Magento\TestFramework\ObjectManager;
 use PHPUnit_Framework_TestCase;
+use SemExpert\ProductTags\Model\ConfigInterface as ModuleConfigurationInterface;
 
 class ModuleConfigTest extends PHPUnit_Framework_TestCase
 {
@@ -49,5 +51,16 @@ class ModuleConfigTest extends PHPUnit_Framework_TestCase
         $moduleList = $objectManager->create(ModuleList::class, ['config' => $deploymentConfig]);
 
         $this->assertTrue($moduleList->has($this->moduleName), "The module is not enabled in Real Env");
+    }
+
+    public function testDiConfiguration()
+    {
+        /** @var DIConfig $diConfig */
+        $diConfig = ObjectManager::getInstance()->get(DIConfig::class);
+
+        $type = ModuleConfigurationInterface::class;
+        $expectedType = \SemExpert\ProductTags\Model\Config\Data::class;
+
+        $this->assertSame($expectedType, $diConfig->getInstanceType($type));
     }
 }

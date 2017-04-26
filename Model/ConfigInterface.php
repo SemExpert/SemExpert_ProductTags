@@ -8,8 +8,7 @@
 
 namespace SemExpert\ProductTags\Model;
 
-
-interface ConfigurationInterface
+interface ConfigInterface
 {
     /**
      * @return float
