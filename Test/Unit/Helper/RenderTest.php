@@ -8,19 +8,19 @@
 
 namespace SemExpert\ProductTags\Test\Unit\Helper;
 
+use Magento\Catalog\Model\Product;
 use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Pricing\PriceInfoInterface;
-use Magento\Framework\Pricing\SaleableInterface;
 use SemExpert\ProductTags\Helper\Render;
-use SemExpert\ProductTags\Model\ConfigInterface;
+use SemExpert\ProductTags\Api\ConfigInterface;
 
 class RenderTest extends \PHPUnit_Framework_TestCase
 {
     /**
      * @var Context|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $context;
+    protected $mockContext;
 
     /**
      * @var PriceInfoInterface|\PHPUnit_Framework_MockObject_MockObject
@@ -28,7 +28,7 @@ class RenderTest extends \PHPUnit_Framework_TestCase
     protected $priceInfo;
 
     /**
-     * @var SaleableInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var Product|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $product;
 
@@ -38,39 +38,38 @@ class RenderTest extends \PHPUnit_Framework_TestCase
     public $helper;
 
     /**
-     * @var ConfigInterface|\PHPUnit_Framework_MockObject_MockObject
+     * @var \SemExpert\ProductTags\Api\ConfigInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $config;
+    protected $mockConfig;
 
     /**
      * @var FinalPrice|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $price;
+    protected $priceMock;
 
     public function setUp()
     {
-        $this->context = $this->getMockBuilder(Context::class)
-            ->disableOriginalConstructor()
-            ->getMock();
+        $this->mockContext = $this->getMock(Context::class, [], [], '', false);
+        $this->mockConfig = $this->getMock(ConfigInterface::class);
+        $this->helper = new Render($this->mockContext, $this->mockConfig);
 
-        $this->config = $this->getMock(ConfigInterface::class);
-        $this->helper = new Render($this->context, $this->config);
-
-        $this->product = $this->getMock(SaleableInterface::class);
+        $this->product = $this->getMockBuilder(Product::class)->disableOriginalConstructor()->getMock();
         $this->priceInfo = $this->getMock(PriceInfoInterface::class);
-        $this->price = $this->getMockBuilder(FinalPrice::class)->disableOriginalConstructor()->getMock();
+        $this->priceMock = $this->getMockBuilder(FinalPrice::class)->disableOriginalConstructor()->getMock();
 
         $this->product->method('getPriceInfo')->willReturn($this->priceInfo);
-        $this->priceInfo->method('getPrice')->willReturn($this->price);
+        $this->priceInfo->method('getPrice')->willReturn($this->priceMock);
     }
 
     public function testFreeShipping()
     {
-        $tagContent = '<div class="flag envio-gratis"><i class="icon-envio-gratis"></i><span>Envío gratis</span></div>';
+        $tagContent = '<span class="free-shipping">Free Shipping</span>';
+        $threshold = 500;
 
-        $this->config->method('getFreeShippingThreshold')->willReturn(500);
-        $this->config->method('getFreeShippingTag')->willReturn($tagContent);
-        $this->price->method('getValue')->willReturn(1000);
+        $this->mockConfig->method('getFreeShippingThreshold')->willReturn($threshold);
+        $this->mockConfig->method('getFreeShippingTag')->willReturn($tagContent);
+
+        $this->priceMock->method('getValue')->willReturn($threshold + 1);
 
         $result = $this->helper->freeShipping($this->product);
         $this->assertEquals($tagContent, $result);
@@ -78,8 +77,8 @@ class RenderTest extends \PHPUnit_Framework_TestCase
 
     public function testFreeShippingIsEmptyWithLowPrice()
     {
-        $this->config->method('getFreeShippingThreshold')->willReturn(500);
-        $this->price->method('getValue')->willReturn(100);
+        $this->mockConfig->method('getFreeShippingThreshold')->willReturn(500);
+        $this->priceMock->method('getValue')->willReturn(100);
 
         $this->assertEquals('', $this->helper->freeShipping($this->product));
     }

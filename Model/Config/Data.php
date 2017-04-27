@@ -8,7 +8,7 @@
 
 namespace SemExpert\ProductTags\Model\Config;
 
-use SemExpert\ProductTags\Model\ConfigInterface;
+use SemExpert\ProductTags\Api\ConfigInterface;
 
 class Data implements ConfigInterface
 {
@@ -18,7 +18,7 @@ class Data implements ConfigInterface
      */
     public function getFreeShippingThreshold()
     {
-        return 10;
+        return 59;
     }
 
     /**
@@ -26,6 +26,6 @@ class Data implements ConfigInterface
      */
     public function getFreeShippingTag()
     {
-        return 'Hola!!!';
+        return '<div class="flag envio-gratis"><i class="icon-envio-gratis"></i><span>Envío gratis</span></div>';
     }
 }

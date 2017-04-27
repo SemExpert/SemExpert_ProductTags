@@ -1,6 +1,6 @@
 <?xml version="1.0"?>
 <config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
         xsi:noNamespaceSchemaLocation="urn:magento:framework:ObjectManager/etc/config.xsd">
-    <virtualType name="SemExpert\ProductTags\Config" type="SemExpert\ProductTags\Model\Config\Data">
-    </virtualType>
+    <preference for="SemExpert\ProductTags\Api\ConfigInterface"
+                type="SemExpert\ProductTags\Model\Config\Data" />
 </config>

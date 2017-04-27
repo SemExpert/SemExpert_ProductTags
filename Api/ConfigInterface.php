@@ -6,7 +6,7 @@
  * Time: 11:17 PM
  */
 
-namespace SemExpert\ProductTags\Model;
+namespace SemExpert\ProductTags\Api;
 
 interface ConfigInterface
 {
