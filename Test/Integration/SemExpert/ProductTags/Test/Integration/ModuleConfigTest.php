@@ -58,7 +58,7 @@ class ModuleConfigTest extends PHPUnit_Framework_TestCase
         /** @var DIConfig $diConfig */
         $diConfig = ObjectManager::getInstance()->get(DIConfig::class);
 
-        $type = ModuleConfigurationInterface::class;
+        $type = \SemExpert\ProductTags\Config::class;
         $expectedType = \SemExpert\ProductTags\Model\Config\Data::class;
 
         $this->assertSame($expectedType, $diConfig->getInstanceType($type));

@@ -12,17 +12,18 @@ namespace SemExpert\ProductTags\Helper;
 use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
+use Magento\Framework\Pricing\PriceInfoInterface;
 use Magento\Framework\Pricing\SaleableInterface;
-use SemExpert\ProductTags\Model\ConfigInterface;
+use SemExpert\ProductTags\Config;
 
 class Render extends AbstractHelper
 {
     /**
-     * @var ConfigInterface
+     * @var \SemExpert\ProductTags\Model\ConfigInterface
      */
     protected $config;
 
-    public function __construct(Context $context, ConfigInterface $config)
+    public function __construct(Context $context, Config $config)
     {
         parent::__construct($context);
         $this->config = $config;
@@ -30,10 +31,19 @@ class Render extends AbstractHelper
 
     public function freeShipping(SaleableInterface $product)
     {
-        if ($product->getPriceInfo()->getPrice(FinalPrice::PRICE_CODE)->getValue() > $this->config->getFreeShippingThreshold()) {
+        if ($this->shouldRenderFinalPrice($product->getPriceInfo())) {
             return $this->config->getFreeShippingTag();
         }
 
         return '';
+    }
+
+    /**
+     * @param PriceInfoInterface $priceInfo
+     * @return bool
+     */
+    protected function shouldRenderFinalPrice(PriceInfoInterface $priceInfo)
+    {
+        return $priceInfo->getPrice(FinalPrice::PRICE_CODE)->getValue() > $this->config->getFreeShippingThreshold();
     }
 }
