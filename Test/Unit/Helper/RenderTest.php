@@ -9,6 +9,7 @@
 namespace SemExpert\ProductTags\Test\Unit\Helper;
 
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Pricing\Price\BasePrice;
 use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Pricing\PriceInfoInterface;
@@ -24,6 +25,7 @@ class RenderTest extends \PHPUnit_Framework_TestCase
     const PAST_DATE = '2000-01-01';
     const FUTURE_DATE = '2050-01-01';
     const DEFAULT_STORE_CODE = 'default';
+    const SALE_TAG_CONTENT = '<span>On sale</span>';
     /**
      * @var Context|\PHPUnit_Framework_MockObject_MockObject
      */
@@ -52,12 +54,17 @@ class RenderTest extends \PHPUnit_Framework_TestCase
     /**
      * @var FinalPrice|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $priceMock;
+    protected $finalPriceMock;
 
     /**
      * @var TimezoneInterface|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $localeMock;
+
+    /**
+     * @var BasePrice|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $basePriceMock;
 
     ###########################################################################
     ## Setup Methods
@@ -82,10 +89,17 @@ class RenderTest extends \PHPUnit_Framework_TestCase
         $this->productMock->method('getStore')->willReturn(self::DEFAULT_STORE_CODE);
 
         $this->priceInfoMock = $this->getMock(PriceInfoInterface::class);
-        $this->priceMock = $this->getMock(FinalPrice::class, [], [], '', false);
+        $this->finalPriceMock = $this->getMock(FinalPrice::class, [], [], '', false);
+        $this->basePriceMock = $this->getMock(BasePrice::class, [], [], '', false);
 
         $this->productMock->method('getPriceInfo')->willReturn($this->priceInfoMock);
-        $this->priceInfoMock->method('getPrice')->willReturn($this->priceMock);
+
+        $priceMap = [
+            [FinalPrice::PRICE_CODE, $this->finalPriceMock],
+            [BasePrice::PRICE_CODE, $this->basePriceMock]
+        ];
+
+        $this->priceInfoMock->method('getPrice')->will($this->returnValueMap($priceMap));
     }
 
     protected function setupNewProductConfig($value = self::NEW_PRODUCT_TAG_CONTENT)
@@ -103,6 +117,19 @@ class RenderTest extends \PHPUnit_Framework_TestCase
         $this->productMock->method('getData')->will($this->returnValueMap($datesMap));
     }
 
+    protected function setupPriceMock(\PHPUnit_Framework_MockObject_MockObject $priceMock, $price)
+    {
+        $priceMock->method('getValue')->willReturn($price);
+    }
+
+    /**
+     * @param string $value
+     */
+    protected function setupSaleTagConfig($value = self::SALE_TAG_CONTENT)
+    {
+        $this->configMock->method('getSaleTag')->willReturn($value);
+    }
+
     ###########################################################################
     ### Actual Tests
 
@@ -111,7 +138,7 @@ class RenderTest extends \PHPUnit_Framework_TestCase
         $this->configMock->method('getFreeShippingThreshold')->willReturn(self::FREE_SHIPPING_THRESHOLD);
         $this->configMock->method('getFreeShippingTag')->willReturn(self::FREE_SHIPPING_TAG_CONTENT);
 
-        $this->priceMock->method('getValue')->willReturn(self::FREE_SHIPPING_THRESHOLD + 1);
+        $this->setupPriceMock($this->finalPriceMock, self::FREE_SHIPPING_THRESHOLD + 1);
 
         $result = $this->helper->freeShipping($this->productMock);
         $this->assertEquals(self::FREE_SHIPPING_TAG_CONTENT, $result);
@@ -121,7 +148,7 @@ class RenderTest extends \PHPUnit_Framework_TestCase
     {
         $this->configMock->method('getFreeShippingThreshold')->willReturn(self::FREE_SHIPPING_THRESHOLD);
         $this->configMock->method('getFreeShippingTag')->willReturn(self::FREE_SHIPPING_TAG_CONTENT);
-        $this->priceMock->method('getValue')->willReturn(self::FREE_SHIPPING_THRESHOLD - 1);
+        $this->setupPriceMock($this->finalPriceMock, self::FREE_SHIPPING_THRESHOLD - 1);
 
         $this->assertEquals('', $this->helper->freeShipping($this->productMock));
     }
@@ -176,4 +203,27 @@ class RenderTest extends \PHPUnit_Framework_TestCase
         $this->assertSame('', $this->helper->newProduct($this->productMock));
     }
 
+    public function testSaleIsEmptyOnRegularPrice()
+    {
+        $this->assertSame('', $this->helper->sale($this->productMock));
+    }
+
+    public function testSaleMatchesOnSpecialPrice()
+    {
+        $this->setupPriceMock($this->basePriceMock, 1000);
+        $this->setupPriceMock($this->finalPriceMock, 50);
+        $this->setupSaleTagConfig();
+
+        $this->assertSame(self::SALE_TAG_CONTENT, $this->helper->sale($this->productMock));
+    }
+
+    public function testSaleUsesConfigValue()
+    {
+        $this->setupPriceMock($this->basePriceMock, 1000);
+        $this->setupPriceMock($this->finalPriceMock, 50);
+
+        $this->setupSaleTagConfig('ON SALE');
+
+        $this->assertSame('ON SALE', $this->helper->sale($this->productMock));
+    }
 }

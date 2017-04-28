@@ -36,4 +36,12 @@ class Data implements ConfigInterface
     {
         return '<div class="flag nuevo">Nuevo</div>';
     }
+
+    /**
+     * @return string
+     */
+    public function getSaleTag()
+    {
+        return '<div class="flag oportunidad">Oportunidad</div>';
+    }
 }

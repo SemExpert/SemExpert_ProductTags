@@ -24,4 +24,9 @@ interface ConfigInterface
      * @return string
      */
     public function getNewProductTag();
+
+    /**
+     * @return string
+     */
+    public function getSaleTag();
 }

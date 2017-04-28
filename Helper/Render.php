@@ -8,8 +8,8 @@
 
 namespace SemExpert\ProductTags\Helper;
 
-
 use Magento\Catalog\Model\Product;
+use Magento\Catalog\Pricing\Price\BasePrice;
 use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
@@ -68,6 +68,18 @@ class Render extends AbstractHelper
         }
 
         return $this->config->getNewProductTag();
+    }
+
+    public function sale(Product $product)
+    {
+        $basePrice = $product->getPriceInfo()->getPrice(BasePrice::PRICE_CODE);
+        $finalPrice = $product->getPriceInfo()->getPrice(FinalPrice::PRICE_CODE);
+
+        if ($finalPrice->getValue() < $basePrice->getValue()) {
+            return $this->config->getSaleTag();
+        }
+
+        return '';
     }
 
     /**
