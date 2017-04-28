@@ -19,4 +19,9 @@ interface ConfigInterface
      * @return string
      */
     public function getFreeShippingTag();
+
+    /**
+     * @return string
+     */
+    public function getNewProductTag();
 }

@@ -14,6 +14,7 @@ use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Framework\App\Helper\AbstractHelper;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Pricing\PriceInfoInterface;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use SemExpert\ProductTags\Api\ConfigInterface;
 
 class Render extends AbstractHelper
@@ -23,10 +24,22 @@ class Render extends AbstractHelper
      */
     protected $config;
 
-    public function __construct(Context $context, ConfigInterface $config)
+    /**
+     * @var TimezoneInterface
+     */
+    protected $localeDate;
+
+    /**
+     * Render constructor.
+     * @param Context $context
+     * @param ConfigInterface $config
+     * @param TimezoneInterface $localeDate
+     */
+    public function __construct(Context $context, ConfigInterface $config, TimezoneInterface $localeDate)
     {
         parent::__construct($context);
         $this->config = $config;
+        $this->localeDate = $localeDate;
     }
 
     public function freeShipping(Product $product)
@@ -36,6 +49,25 @@ class Render extends AbstractHelper
         }
 
         return '';
+    }
+
+    /**
+     * @param Product $product
+     * @return string
+     */
+    public function newProduct(Product $product)
+    {
+        $newsFromDate = $product->getData('news_from_date');
+        $newsToDate = $product->getData('news_to_date');
+
+        if (
+            !$newsFromDate && !$newsToDate
+            || !$this->localeDate->isScopeDateInInterval($product->getStore(), $newsFromDate, $newsToDate)
+        ) {
+            return '';
+        }
+
+        return $this->config->getNewProductTag();
     }
 
     /**

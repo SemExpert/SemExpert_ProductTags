@@ -28,4 +28,12 @@ class Data implements ConfigInterface
     {
         return '<div class="flag envio-gratis"><i class="icon-envio-gratis"></i><span>Envío gratis</span></div>';
     }
+
+    /**
+     * @return string
+     */
+    public function getNewProductTag()
+    {
+        return '<div class="flag nuevo">Nuevo</div>';
+    }
 }

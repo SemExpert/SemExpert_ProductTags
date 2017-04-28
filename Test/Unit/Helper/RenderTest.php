@@ -12,25 +12,32 @@ use Magento\Catalog\Model\Product;
 use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Pricing\PriceInfoInterface;
+use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
 use SemExpert\ProductTags\Helper\Render;
 use SemExpert\ProductTags\Api\ConfigInterface;
 
 class RenderTest extends \PHPUnit_Framework_TestCase
 {
+    const NEW_PRODUCT_TAG_CONTENT = '<span class="new-product">New Product</span>';
+    const FREE_SHIPPING_TAG_CONTENT = '<span class="free-shipping">Free Shipping</span>';
+    const FREE_SHIPPING_THRESHOLD = 500;
+    const PAST_DATE = '2000-01-01';
+    const FUTURE_DATE = '2050-01-01';
+    const DEFAULT_STORE_CODE = 'default';
     /**
      * @var Context|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $mockContext;
+    protected $contextMock;
 
     /**
      * @var PriceInfoInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $priceInfo;
+    protected $priceInfoMock;
 
     /**
      * @var Product|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $product;
+    protected $productMock;
 
     /**
      * @var Render
@@ -40,47 +47,133 @@ class RenderTest extends \PHPUnit_Framework_TestCase
     /**
      * @var \SemExpert\ProductTags\Api\ConfigInterface|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $mockConfig;
+    protected $configMock;
 
     /**
      * @var FinalPrice|\PHPUnit_Framework_MockObject_MockObject
      */
     protected $priceMock;
 
+    /**
+     * @var TimezoneInterface|\PHPUnit_Framework_MockObject_MockObject
+     */
+    protected $localeMock;
+
+    ###########################################################################
+    ## Setup Methods
+
     public function setUp()
     {
-        $this->mockContext = $this->getMock(Context::class, [], [], '', false);
-        $this->mockConfig = $this->getMock(ConfigInterface::class);
-        $this->helper = new Render($this->mockContext, $this->mockConfig);
+        $this->contextMock = $this->getMock(Context::class, [], [], '', false);
+        $this->configMock = $this->getMock(ConfigInterface::class);
+        $this->localeMock = $this->getMock(TimezoneInterface::class);
 
-        $this->product = $this->getMockBuilder(Product::class)->disableOriginalConstructor()->getMock();
-        $this->priceInfo = $this->getMock(PriceInfoInterface::class);
-        $this->priceMock = $this->getMockBuilder(FinalPrice::class)->disableOriginalConstructor()->getMock();
+        $intervalMap = [
+            [self::DEFAULT_STORE_CODE, self::PAST_DATE, self::FUTURE_DATE, true],
+            [self::DEFAULT_STORE_CODE, $this->anything(), self::PAST_DATE, false],
+            [self::DEFAULT_STORE_CODE, self::FUTURE_DATE, $this->anything(), false]
+        ];
 
-        $this->product->method('getPriceInfo')->willReturn($this->priceInfo);
-        $this->priceInfo->method('getPrice')->willReturn($this->priceMock);
+        $this->localeMock->method('isScopeDateInInterval')->will($this->returnValueMap($intervalMap));
+
+        $this->helper = new Render($this->contextMock, $this->configMock, $this->localeMock);
+
+        $this->productMock = $this->getMock(Product::class, [], [], '', false);
+        $this->productMock->method('getStore')->willReturn(self::DEFAULT_STORE_CODE);
+
+        $this->priceInfoMock = $this->getMock(PriceInfoInterface::class);
+        $this->priceMock = $this->getMock(FinalPrice::class, [], [], '', false);
+
+        $this->productMock->method('getPriceInfo')->willReturn($this->priceInfoMock);
+        $this->priceInfoMock->method('getPrice')->willReturn($this->priceMock);
     }
+
+    protected function setupNewProductConfig($value = self::NEW_PRODUCT_TAG_CONTENT)
+    {
+        $this->configMock->method('getNewProductTag')->willReturn($value);
+    }
+
+    protected function setupProductAsNew()
+    {
+        $datesMap = [
+            ['news_from_date', null, self::PAST_DATE],
+            ['news_to_date', null, self::FUTURE_DATE]
+        ];
+
+        $this->productMock->method('getData')->will($this->returnValueMap($datesMap));
+    }
+
+    ###########################################################################
+    ### Actual Tests
 
     public function testFreeShipping()
     {
-        $tagContent = '<span class="free-shipping">Free Shipping</span>';
-        $threshold = 500;
+        $this->configMock->method('getFreeShippingThreshold')->willReturn(self::FREE_SHIPPING_THRESHOLD);
+        $this->configMock->method('getFreeShippingTag')->willReturn(self::FREE_SHIPPING_TAG_CONTENT);
 
-        $this->mockConfig->method('getFreeShippingThreshold')->willReturn($threshold);
-        $this->mockConfig->method('getFreeShippingTag')->willReturn($tagContent);
+        $this->priceMock->method('getValue')->willReturn(self::FREE_SHIPPING_THRESHOLD + 1);
 
-        $this->priceMock->method('getValue')->willReturn($threshold + 1);
-
-        $result = $this->helper->freeShipping($this->product);
-        $this->assertEquals($tagContent, $result);
+        $result = $this->helper->freeShipping($this->productMock);
+        $this->assertEquals(self::FREE_SHIPPING_TAG_CONTENT, $result);
     }
 
     public function testFreeShippingIsEmptyWithLowPrice()
     {
-        $this->mockConfig->method('getFreeShippingThreshold')->willReturn(500);
-        $this->priceMock->method('getValue')->willReturn(100);
+        $this->configMock->method('getFreeShippingThreshold')->willReturn(self::FREE_SHIPPING_THRESHOLD);
+        $this->configMock->method('getFreeShippingTag')->willReturn(self::FREE_SHIPPING_TAG_CONTENT);
+        $this->priceMock->method('getValue')->willReturn(self::FREE_SHIPPING_THRESHOLD - 1);
 
-        $this->assertEquals('', $this->helper->freeShipping($this->product));
+        $this->assertEquals('', $this->helper->freeShipping($this->productMock));
+    }
+
+    public function testNewProduct()
+    {
+        $this->setupProductAsNew();
+        $this->setupNewProductConfig();
+
+        $this->assertSame(self::NEW_PRODUCT_TAG_CONTENT, $this->helper->newProduct($this->productMock));
+    }
+
+    public function testNewProductIsEmptyWithoutInfo()
+    {
+        $this->setupNewProductConfig();
+        $this->assertSame('', $this->helper->newProduct($this->productMock));
+    }
+
+    public function testNewProductTagMatchesConfig()
+    {
+        $config = '<span>Different Tag</span>';
+
+        $this->setupNewProductConfig($config);
+        $this->setupProductAsNew();
+
+        $this->assertSame($config, $this->helper->newProduct($this->productMock));
+    }
+
+    public function testNewProductIsEmptyOnOldProduct()
+    {
+        $datesMap = [
+            ['news_from_date', null, self::PAST_DATE],
+            ['news_to_date', null, self::PAST_DATE]
+        ];
+
+        $this->productMock->method('getData')->will($this->returnValueMap($datesMap));
+        $this->setupNewProductConfig();
+
+        $this->assertSame('', $this->helper->newProduct($this->productMock));
+    }
+
+    public function testNewProductIsEmptyOnFutureProduct()
+    {
+        $datesMap = [
+            ['news_from_date', null, self::FUTURE_DATE],
+            ['news_to_date', null, self::FUTURE_DATE]
+        ];
+
+        $this->productMock->method('getData')->will($this->returnValueMap($datesMap));
+        $this->setupNewProductConfig();
+
+        $this->assertSame('', $this->helper->newProduct($this->productMock));
     }
 
 }
