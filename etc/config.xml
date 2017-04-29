@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+<config xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+        xsi:noNamespaceSchemaLocation="urn:magento:module:Magento_Store:etc/config.xsd">
+    <default>
+        <product_tags>
+            <free_shipping>
+                <threshold>2000</threshold>
+                <tag_content><![CDATA[<span class="product-tag product-tag__free-shipping">Free Shipping</span>]]></tag_content>
+            </free_shipping>
+            <new_product>
+                <tag_content><![CDATA[<span class="product-tag product-tag__new-product">New Product</span>]]></tag_content>
+            </new_product>
+            <sale>
+                <tag_content><![CDATA[<span class="product-tag product-tag__sale">On sale</span>]]></tag_content>
+            </sale>
+        </product_tags>
+    </default>
+</config>

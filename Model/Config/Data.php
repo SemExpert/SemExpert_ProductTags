@@ -8,17 +8,31 @@
 
 namespace SemExpert\ProductTags\Model\Config;
 
+use Magento\Framework\App\Config\ScopeConfigInterface;
 use SemExpert\ProductTags\Api\ConfigInterface;
 
 class Data implements ConfigInterface
 {
+    const FREE_SHIPPING_THRESHOLD_PATH = 'product_tags/free_shipping/threshold';
+    const FREE_SHIPPING_TAG_CONTENT_PATH = 'product_tags/free_shipping/tag_content';
+    const NEW_PRODUCT_TAG_CONTENT_PATH = 'product_tags/new_product/tag_content';
+    const SALE_TAG_CONTENT_PATH = 'product_tags/sale/tag_content';
+    /**
+     * @var ScopeConfigInterface
+     */
+    protected $scopeConfig;
+
+    public function __construct(ScopeConfigInterface $scopeConfig)
+    {
+        $this->scopeConfig = $scopeConfig;
+    }
 
     /**
      * @return float
      */
     public function getFreeShippingThreshold()
     {
-        return 59;
+        return $this->scopeConfig->getValue(self::FREE_SHIPPING_THRESHOLD_PATH, 'store');
     }
 
     /**
@@ -26,7 +40,7 @@ class Data implements ConfigInterface
      */
     public function getFreeShippingTag()
     {
-        return '<div class="flag envio-gratis"><i class="icon-envio-gratis"></i><span>Envío gratis</span></div>';
+        return $this->scopeConfig->getValue(self::FREE_SHIPPING_TAG_CONTENT_PATH, 'store');
     }
 
     /**
@@ -34,7 +48,7 @@ class Data implements ConfigInterface
      */
     public function getNewProductTag()
     {
-        return '<div class="flag nuevo">Nuevo</div>';
+        return $this->scopeConfig->getValue(self::NEW_PRODUCT_TAG_CONTENT_PATH, 'store');
     }
 
     /**
@@ -42,6 +56,6 @@ class Data implements ConfigInterface
      */
     public function getSaleTag()
     {
-        return '<div class="flag oportunidad">Oportunidad</div>';
+        return $this->scopeConfig->getValue(self::SALE_TAG_CONTENT_PATH, 'store');
     }
 }
