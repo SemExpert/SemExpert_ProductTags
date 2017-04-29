@@ -9,7 +9,7 @@
 namespace SemExpert\ProductTags\Test\Unit\Helper;
 
 use Magento\Catalog\Model\Product;
-use Magento\Catalog\Pricing\Price\BasePrice;
+use Magento\Catalog\Pricing\Price\RegularPrice;
 use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Pricing\PriceInfoInterface;
@@ -62,9 +62,9 @@ class RenderTest extends \PHPUnit_Framework_TestCase
     protected $localeMock;
 
     /**
-     * @var BasePrice|\PHPUnit_Framework_MockObject_MockObject
+     * @var RegularPrice|\PHPUnit_Framework_MockObject_MockObject
      */
-    protected $basePriceMock;
+    protected $regularPriceMock;
 
     ###########################################################################
     ## Setup Methods
@@ -90,13 +90,13 @@ class RenderTest extends \PHPUnit_Framework_TestCase
 
         $this->priceInfoMock = $this->getMock(PriceInfoInterface::class);
         $this->finalPriceMock = $this->getMock(FinalPrice::class, [], [], '', false);
-        $this->basePriceMock = $this->getMock(BasePrice::class, [], [], '', false);
+        $this->regularPriceMock = $this->getMock(RegularPrice::class, [], [], '', false);
 
         $this->productMock->method('getPriceInfo')->willReturn($this->priceInfoMock);
 
         $priceMap = [
             [FinalPrice::PRICE_CODE, $this->finalPriceMock],
-            [BasePrice::PRICE_CODE, $this->basePriceMock]
+            [RegularPrice::PRICE_CODE, $this->regularPriceMock]
         ];
 
         $this->priceInfoMock->method('getPrice')->will($this->returnValueMap($priceMap));
@@ -210,7 +210,7 @@ class RenderTest extends \PHPUnit_Framework_TestCase
 
     public function testSaleMatchesOnSpecialPrice()
     {
-        $this->setupPriceMock($this->basePriceMock, 1000);
+        $this->setupPriceMock($this->regularPriceMock, 1000);
         $this->setupPriceMock($this->finalPriceMock, 50);
         $this->setupSaleTagConfig();
 
@@ -219,7 +219,7 @@ class RenderTest extends \PHPUnit_Framework_TestCase
 
     public function testSaleUsesConfigValue()
     {
-        $this->setupPriceMock($this->basePriceMock, 1000);
+        $this->setupPriceMock($this->regularPriceMock, 1000);
         $this->setupPriceMock($this->finalPriceMock, 50);
 
         $this->setupSaleTagConfig('ON SALE');
