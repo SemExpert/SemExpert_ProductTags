@@ -1,5 +1,5 @@
 {
-  "name": "semexpert/product-tags",
+  "name": "semexpert/module-product-tags",
   "description": "Adds tags to products in lists and view product page",
   "minimum-stability": "dev",
   "type": "magento2-module",
