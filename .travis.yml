@@ -51,7 +51,7 @@ before_install:
 install:
 - composer install --no-interaction --prefer-dist
 - composer config repositories.test_target git https://github.com/${TRAVIS_REPO_SLUG}.git
-- composer require semexpert/semexpert/module-product-tags dev-$TRAVIS_BRANCH
+- composer require semexpert/module-product-tags dev-$TRAVIS_BRANCH
 before_script:
 - cp -f ${TRAVIS_BUILD_DIR}/dev/tests/unit/phpunit.xml dev/tests/unit/
 - cp -f ${TRAVIS_BUILD_DIR}/dev/tests/integration/phpunit.xml.dist dev/tests/integration/
