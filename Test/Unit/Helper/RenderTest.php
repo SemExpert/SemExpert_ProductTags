@@ -14,10 +14,11 @@ use Magento\Catalog\Pricing\Price\FinalPrice;
 use Magento\Framework\App\Helper\Context;
 use Magento\Framework\Pricing\PriceInfoInterface;
 use Magento\Framework\Stdlib\DateTime\TimezoneInterface;
+use PHPUnit\Framework\TestCase;
 use SemExpert\ProductTags\Helper\Render;
 use SemExpert\ProductTags\Api\ConfigInterface;
 
-class RenderTest extends \PHPUnit_Framework_TestCase
+class RenderTest extends TestCase
 {
     const NEW_PRODUCT_TAG_CONTENT = '<span class="new-product">New Product</span>';
     const FREE_SHIPPING_TAG_CONTENT = '<span class="free-shipping">Free Shipping</span>';
@@ -71,9 +72,12 @@ class RenderTest extends \PHPUnit_Framework_TestCase
 
     public function setUp()
     {
-        $this->contextMock = $this->getMock(Context::class, [], [], '', false);
-        $this->configMock = $this->getMock(ConfigInterface::class);
-        $this->localeMock = $this->getMock(TimezoneInterface::class);
+        $contextMockBuilder = $this->getMockBuilder(Context::class);
+        $contextMockBuilder->disableOriginalConstructor();
+        $this->contextMock = $contextMockBuilder->getMock();
+
+        $this->configMock = $this->getMockBuilder(ConfigInterface::class)->getMock();
+        $this->localeMock = $this->getMockBuilder(TimezoneInterface::class)->getMock();
 
         $intervalMap = [
             [self::DEFAULT_STORE_CODE, self::PAST_DATE, self::FUTURE_DATE, true],
@@ -85,12 +89,20 @@ class RenderTest extends \PHPUnit_Framework_TestCase
 
         $this->helper = new Render($this->contextMock, $this->configMock, $this->localeMock);
 
-        $this->productMock = $this->getMock(Product::class, [], [], '', false);
+        $productMockBuilder = $this->getMockBuilder(Product::class);
+        $productMockBuilder->disableOriginalConstructor();
+        $this->productMock = $productMockBuilder->getMock();
         $this->productMock->method('getStore')->willReturn(self::DEFAULT_STORE_CODE);
 
-        $this->priceInfoMock = $this->getMock(PriceInfoInterface::class);
-        $this->finalPriceMock = $this->getMock(FinalPrice::class, [], [], '', false);
-        $this->regularPriceMock = $this->getMock(RegularPrice::class, [], [], '', false);
+        $this->priceInfoMock = $this->getMockBuilder(PriceInfoInterface::class)->getMock();
+
+        $finalPriceBuilder = $this->getMockBuilder(FinalPrice::class);
+        $finalPriceBuilder->disableOriginalConstructor();
+        $this->finalPriceMock = $finalPriceBuilder->getMock();
+
+        $regularPriceBuilder = $this->getMockBuilder(RegularPrice::class);
+        $regularPriceBuilder->disableOriginalConstructor();
+        $this->regularPriceMock = $regularPriceBuilder->getMock();
 
         $this->productMock->method('getPriceInfo')->willReturn($this->priceInfoMock);
 

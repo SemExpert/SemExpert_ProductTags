@@ -14,11 +14,11 @@ use Magento\Framework\App\Filesystem\DirectoryList;
 use Magento\Framework\Module\ModuleList;
 use Magento\Framework\ObjectManager\ConfigInterface as DIConfig;
 use Magento\TestFramework\ObjectManager;
-use PHPUnit_Framework_TestCase;
+use PHPUnit\Framework\TestCase;
 use SemExpert\ProductTags\Api\ConfigInterface as ModuleConfigurationInterface;
 use SemExpert\ProductTags\Model\Config\Data as ConfigurationImplementation;
 
-class ModuleConfigTest extends PHPUnit_Framework_TestCase
+class ModuleConfigTest extends TestCase
 {
     protected $moduleName = 'SemExpert_ProductTags';
 
