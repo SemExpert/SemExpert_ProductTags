@@ -60,10 +60,9 @@ class Render extends AbstractHelper
         $newsFromDate = $product->getData('news_from_date');
         $newsToDate = $product->getData('news_to_date');
 
-        if (
-            !$newsFromDate && !$newsToDate
-            || !$this->localeDate->isScopeDateInInterval($product->getStore(), $newsFromDate, $newsToDate)
-        ) {
+        $isDateInInterval = $this->localeDate->isScopeDateInInterval($product->getStore(), $newsFromDate, $newsToDate);
+
+        if (!$newsFromDate && !$newsToDate || !$isDateInInterval) {
             return '';
         }
 
