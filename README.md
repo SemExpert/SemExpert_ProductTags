@@ -3,6 +3,9 @@
 **Product Tags** adds a helper meant to be used in product list templates and product view page. The helper will 
 evaluate the state of a given product and display the product tags accordingly.
 
+[![Build Status](https://travis-ci.org/SemExpert/SemExpert_ProductTags.svg?branch=master)](https://travis-ci.org/SemExpert/SemExpert_ProductTags)
+
+
 Product tags markup and relevant conditions (when applicable) are fully customizable from the admin panel.
 
 Currently implemented tags are:
