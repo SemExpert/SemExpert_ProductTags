@@ -57,7 +57,7 @@ before_script:
 - cp -f ${TRAVIS_BUILD_DIR}/dev/tests/integration/phpunit.xml.dist dev/tests/integration/
 - cp -f ${TRAVIS_BUILD_DIR}/dev/tests/static/less/whitelist/common.txt dev/tests/static/testsuite/Magento/Test/Less/_files/whitelist/common.txt
 - cp -f ${TRAVIS_BUILD_DIR}/dev/tests/static/php/whitelist/common.txt dev/tests/static/testsuite/Magento/Test/Php/_files/whitelist/common.txt
-- cp -f ${TRAVIS_BUILD_DIR}/dev/tests/static/js/whitelist/steps-add-to-cart.txt dev/tests/static/testsuite/Magento/Test/Js/_files/whitelist/
+- cp -f ${TRAVIS_BUILD_DIR}/dev/tests/static/js/whitelist/module-product-tags.txt dev/tests/static/testsuite/Magento/Test/Js/_files/whitelist/
 - rm dev/tests/static/testsuite/Magento/Test/Js/_files/whitelist/magento.txt
 - bash ./dev/travis/before_script.sh
 script:
