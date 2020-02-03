@@ -1,7 +1,7 @@
 {
   "name": "semexpert/module-product-tags",
   "description": "Adds tags to products in lists and view product page",
-  "minimum-stability": "dev",
+  "minimum-stability": "stable",
   "type": "magento2-module",
   "license": [
     "OSL-3.0",
